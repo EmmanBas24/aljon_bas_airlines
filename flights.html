@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyWings Airlines - Available Flights</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="https://via.placeholder.com/40x40" alt="SkyWings Airlines Logo"> <!-- Replace with your actual logo -->
+                <span>SkyWings Airlines</span>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li>
+                    <a href="index.html">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li>
+                    <a href="search.html">
+                        <i class="fas fa-search"></i> Search
+                    </a>
+                </li>
+                <li>
+                    <a href="flights.html" class="active">
+                        <i class="fas fa-plane"></i> Flights
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-users"></i> Passengers
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-clipboard-list"></i> Summary
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="flights-page">
+        <div class="container">
+            <div class="page-header">
+                <i class="fas fa-plane"></i>
+                <h2>Available Flights</h2>
+                <p>Select your preferred flight</p>
+            </div>
+
+            <!-- Departure Flights Section -->
+         <section class="flight-section" id="departureFlightsSection">
+                <h3><i class="fas fa-plane-departure"></i> Departure Flights <span id="departDateDisplay"></span></h3>
+                <div id="departureFlightList">
+                    <!-- Flight cards will be injected here by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Return Flights Section - Initially hidden for One Way -->
+         <section class="flight-section" id="returnFlightsSection">
+                <h3><i class="fas fa-plane-arrival"></i> Return Flights <span id="returnDateDisplay"></span></h3>
+                <div id="returnFlightList">
+                    <!-- Flight cards will be injected here by JavaScript -->
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i> Back to Search
+                </button>
+                <!-- A "Proceed to Passengers" button would go here, linking to passengers.html -->
+            </div>
+        </div>
+    </main>
+
+ <script>
+// ✅ flights.js (Revised by ChatGPT for full data flow)
+
+document.addEventListener('DOMContentLoaded', function () {
+    // === FLIGHT DATASET ===
+    const allAvailableFlights = [
+        // Departure (Manila -> Cebu)
+        { id: 'd1', flightNumber: '5J 560', from: 'Manila (MNL)', to: 'Cebu (CEB)', route: 'Manila - Cebu', departureTime: '08:00 AM', arrivalTime: '09:30 AM', duration: '1h 30m', price: 2500, seatsAvailable: 45, fareType: 'Promo', date: '2025-10-15' },
+        { id: 'd2', flightNumber: 'PR 1823', from: 'Manila (MNL)', to: 'Cebu (CEB)', route: 'Manila - Cebu', departureTime: '12:30 PM', arrivalTime: '02:00 PM', duration: '1h 30m', price: 3200, seatsAvailable: 28, fareType: 'Regular', date: '2025-10-15' },
+        { id: 'd3', flightNumber: 'CX 902', from: 'Manila (MNL)', to: 'Cebu (CEB)', route: 'Manila - Cebu', departureTime: '06:15 PM', arrivalTime: '07:45 PM', duration: '1h 30m', price: 2800, seatsAvailable: 52, fareType: 'Promo', date: '2025-10-15' },
+
+        // Return (Cebu -> Manila)
+        { id: 'r1', flightNumber: '5J 311', from: 'Cebu (CEB)', to: 'Manila (MNL)', route: 'Cebu - Manila', departureTime: '07:00 AM', arrivalTime: '08:30 AM', duration: '1h 30m', price: 2600, seatsAvailable: 38, fareType: 'Promo', date: '2025-10-17' },
+        { id: 'r2', flightNumber: 'PR 1829', from: 'Cebu (CEB)', to: 'Manila (MNL)', route: 'Cebu - Manila', departureTime: '01:00 PM', arrivalTime: '02:30 PM', duration: '1h 30m', price: 3100, seatsAvailable: 22, fareType: 'Regular', date: '2025-10-17' },
+        { id: 'r3', flightNumber: 'CX 616', from: 'Cebu (CEB)', to: 'Manila (MNL)', route: 'Cebu - Manila', departureTime: '05:30 PM', arrivalTime: '07:00 PM', duration: '1h 30m', price: 2700, seatsAvailable: 41, fareType: 'Promo', date: '2025-10-17' }
+    ];
+
+    // === HELPER FUNCTIONS ===
+    function formatDateForDisplay(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString + 'T00:00:00');
+        return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // === RENDER FLIGHT CARDS ===
+    function renderFlightCards(listId, flights, role) {
+        const listElement = document.getElementById(listId);
+        listElement.innerHTML = '';
+
+        if (!flights.length) {
+            listElement.innerHTML = '<p class="no-flights-message">No flights available for this search criteria.</p>';
+            return;
+        }
+
+        flights.forEach(flight => {
+            const card = document.createElement('div');
+            card.className = 'flight-card';
+            card.innerHTML = `
+                <div class="flight-details">
+                    <div class="detail-row">
+                        <div class="detail-item"><strong>Flight Number</strong><span>${flight.flightNumber}</span></div>
+                        <div class="detail-item"><strong>Route</strong><span>${flight.route}</span></div>
+                        <div class="detail-item"><strong>Departure</strong><span>${flight.departureTime}</span></div>
+                        <div class="detail-item"><strong>Arrival</strong><span>${flight.arrivalTime}</span></div>
+                        <div class="detail-item"><strong>Duration</strong><span>${flight.duration}</span></div>
+                    </div>
+                    <div class="detail-row meta-info">
+                        <div class="detail-item"><strong>Seats Available</strong><span>${flight.seatsAvailable}</span></div>
+                        <div class="detail-item"><strong>Date</strong><span>${flight.date}</span></div>
+                    </div>
+                </div>
+                <div class="flight-pricing">
+                    <span class="price">₱${flight.price.toLocaleString()}</span>
+                    ${flight.fareType === 'Promo' ? '<span class="fare-tag promo">Promo</span>' : '<span class="fare-tag regular">Regular</span>'}
+                    <button class="btn btn-select" data-flight-id="${flight.id}" data-role="${role}">
+                        <i class="fas fa-check-circle"></i> Select
+                    </button>
+                </div>
+            `;
+            listElement.appendChild(card);
+        });
+
+        // === FLIGHT SELECTION HANDLER ===
+        listElement.querySelectorAll('.btn-select').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const flightId = this.dataset.flightId;
+                const role = this.dataset.role; // 'departure' or 'return'
+                const flight = allAvailableFlights.find(f => f.id === flightId);
+                if (!flight) return;
+
+                // Retrieve stored booking details (from search page)
+                const raw = sessionStorage.getItem('bookingDetails');
+                if (!raw) {
+                    alert('Booking details missing. Returning to search page.');
+                    window.location.href = 'search.html';
+                    return;
+                }
+
+                const bookingDetails = JSON.parse(raw);
+
+                if (role === 'departure') {
+                    bookingDetails.selectedDeparture = flight;
+                    sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+
+                    // One-way -> go straight to passengers
+                    if (bookingDetails.searchParams.flightType === 'oneWay') {
+                        window.location.href = 'passengers.html';
+                        return;
+                    }
+
+                    alert(`✅ Departure flight selected: ${flight.flightNumber}. Please select your RETURN flight.`);
+                } else if (role === 'return') {
+                    bookingDetails.selectedReturn = flight;
+                    sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+
+                    // If both selected, proceed to passengers
+                    if (bookingDetails.searchParams.flightType === 'roundTrip' && bookingDetails.selectedDeparture) {
+                        window.location.href = 'passengers.html';
+                    } else {
+                        alert('Please select your departure flight first.');
+                    }
+                }
+            });
+        });
+    }
+
+    // === READ SEARCH PARAMS ===
+    const urlParams = new URLSearchParams(window.location.search);
+    const flightType = urlParams.get('flightType') || '';
+    const departDate = urlParams.get('departDate') || '';
+    const returnDate = urlParams.get('returnDate') || '';
+    const fromSearch = urlParams.get('from') || '';
+    const toSearch = urlParams.get('to') || '';
+    const passengers = urlParams.get('passengers') || '1';
+
+    // === INITIALIZE BOOKING DETAILS ===
+    const bookingDetails = {
+        searchParams: { flightType, departDate, returnDate, fromSearch, toSearch, passengers },
+        selectedDeparture: null,
+        selectedReturn: null,
+        passengerList: [],
+        totalCost: 0
+    };
+    sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+
+    // === UPDATE HEADERS ===
+    const departDateDisplay = document.getElementById('departDateDisplay');
+    const returnDateDisplay = document.getElementById('returnDateDisplay');
+    if (departDateDisplay) departDateDisplay.textContent = departDate ? `(${formatDateForDisplay(departDate)})` : '';
+    if (returnDateDisplay) returnDateDisplay.textContent = returnDate ? `(${formatDateForDisplay(returnDate)})` : '';
+
+    // === FILTER FLIGHTS BASED ON SEARCH ===
+    const filteredDepartureFlights = allAvailableFlights.filter(f =>
+        f.date === departDate &&
+        f.from.toLowerCase().includes(fromSearch.toLowerCase()) &&
+        f.to.toLowerCase().includes(toSearch.toLowerCase())
+    );
+
+    const filteredReturnFlights = allAvailableFlights.filter(f =>
+        f.date === returnDate &&
+        f.from.toLowerCase().includes(toSearch.toLowerCase()) &&
+        f.to.toLowerCase().includes(fromSearch.toLowerCase())
+    );
+
+    // === RENDER RESULTS ===
+    const returnFlightsSection = document.getElementById('returnFlightsSection');
+    if (flightType === 'roundTrip') {
+        if (returnFlightsSection) returnFlightsSection.style.display = 'block';
+        renderFlightCards('departureFlightList', filteredDepartureFlights, 'departure');
+        renderFlightCards('returnFlightList', filteredReturnFlights, 'return');
+    } else {
+        if (returnFlightsSection) returnFlightsSection.style.display = 'none';
+        renderFlightCards('departureFlightList', filteredDepartureFlights, 'departure');
+    }
+});
+</script>
+
+</body>
+</html>

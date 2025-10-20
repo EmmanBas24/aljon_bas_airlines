@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyWings Airlines - Search Flights</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="https://via.placeholder.com/40x40" alt="SkyWings Airlines Logo"> <!-- Replace with your actual logo -->
+                <span>SkyWings Airlines</span>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li>
+                    <a href="index.html">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li>
+                    <a href="search.html" class="active">
+                        <i class="fas fa-search"></i> Search
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-plane"></i> Flights
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-users"></i> Passengers
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-clipboard-list"></i> Summary
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="search-page">
+        <div class="container">
+            <!-- Moved search-header outside the form-card for flexibility -->
+            <div class="search-header">
+                <i class="fas fa-search"></i>
+                <h2>Search for Flights</h2>
+                <p>Enter your travel details to find available flights</p>
+            </div>
+
+            <div class="search-form-card">
+                <form id="flightSearchForm">
+            <div class="form-row">
+                        <div class="form-group">
+                            <label for="fromLocation"><i class="fas fa-map-marker-alt"></i> From</label>
+                            <input type="text" id="fromLocation" class="form-control" placeholder="Select Origin" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="toLocation"><i class="fas fa-map-marker-alt"></i> To</label>
+                            <input type="text" id="toLocation" class="form-control" placeholder="To Destination" required>
+                        </div>
+                        <div class="form-group flight-type-group">
+                            <label><i class="fas fa-plane-departure"></i> Flight Type</label>
+                            <div class="radio-group">
+                                <input type="radio" id="roundTrip" name="flightType" value="roundTrip" checked>
+                                <label for="roundTrip">Round Trip</label>
+                                <input type="radio" id="oneWay" name="flightType" value="oneWay">
+                                <label for="oneWay">One Way</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="departureDate"><i class="fas fa-calendar-alt"></i> Departure Date</label>
+                            <input type="date" id="departureDate" class="form-control" placeholder="dd/mm/yyyy">
+                        </div>
+                        <div class="form-group" id="returnDateGroup">
+                            <label for="returnDate"><i class="fas fa-calendar-alt"></i> Return Date</label>
+                            <input type="date" id="returnDate" class="form-control" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="passengers"><i class="fas fa-users"></i> Number of Passengers</label>
+                            <input type="number" id="passengers" class="form-control" value="1" min="1">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="history.back()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search Flights
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+ <script>
+     // search.js
+document.addEventListener('DOMContentLoaded', function () {
+    const flightSearchForm = document.getElementById('flightSearchForm');
+
+    flightSearchForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const flightType = document.querySelector('input[name="flightType"]:checked').value;
+        const departureDate = document.getElementById('departureDate').value;
+        const returnDate = flightType === 'roundTrip' ? document.getElementById('returnDate').value : '';
+        const fromLocation = document.getElementById('fromLocation').value.trim();
+        const toLocation = document.getElementById('toLocation').value.trim();
+        const passengers = parseInt(document.getElementById('passengers').value, 10) || 1;
+
+        // Basic validation
+        if (!fromLocation) {
+            alert('Please enter an origin.');
+            return;
+        }
+        if (!toLocation) {
+            alert('Please enter a destination.');
+            return;
+        }
+        if (!departureDate) {
+            alert('Please select a departure date.');
+            return;
+        }
+        if (flightType === 'roundTrip') {
+            if (!returnDate) {
+                alert('Please select a return date for a round trip.');
+                return;
+            }
+            if (new Date(returnDate) < new Date(departureDate)) {
+                alert('Return date cannot be earlier than departure date.');
+                return;
+            }
+        }
+
+        // Build bookingDetails and store in sessionStorage
+        const bookingDetails = {
+            searchParams: {
+                flightType,
+                departDate: departureDate,
+                returnDate: returnDate,
+                from: fromLocation,
+                to: toLocation,
+                passengers
+            },
+            // selectedDeparture / selectedReturn will be set in flights page
+            selectedDeparture: null,
+            selectedReturn: null,
+            passengersInfo: null
+        };
+
+        sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+
+        // Redirect to flights.html with query params (so user can see them in URL if needed)
+        const params = new URLSearchParams();
+        params.set('flightType', flightType);
+        params.set('departDate', departureDate);
+        if (flightType === 'roundTrip') params.set('returnDate', returnDate);
+        params.set('from', fromLocation);
+        params.set('to', toLocation);
+        params.set('passengers', passengers.toString());
+
+        window.location.href = `flights.html?${params.toString()}`;
+    });
+
+    // Show/hide return date on load (if the page relies on existing inline script behavior)
+    const roundTripRadio = document.getElementById('roundTrip');
+    const oneWayRadio = document.getElementById('oneWay');
+    const returnDateGroup = document.getElementById('returnDateGroup');
+    const returnDateInput = document.getElementById('returnDate');
+
+    function toggleReturnDate() {
+        if (oneWayRadio && oneWayRadio.checked) {
+            returnDateGroup.style.display = 'none';
+            returnDateInput.removeAttribute('required');
+            returnDateInput.value = '';
+        } else {
+            returnDateGroup.style.display = 'block';
+            returnDateInput.setAttribute('required', 'required');
+        }
+    }
+
+    if (roundTripRadio && oneWayRadio) {
+        toggleReturnDate();
+        roundTripRadio.addEventListener('change', toggleReturnDate);
+        oneWayRadio.addEventListener('change', toggleReturnDate);
+    }
+});
+    </script>
+</body>
+</html>
