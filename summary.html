@@ -12,13 +12,11 @@
     <header class="navbar">
         <div class="container">
             <div class="logo">
-                <img src="https://via.placeholder.com/40x40" alt="SkyWings Airlines Logo">
                 <span>SkyWings Airlines</span>
             </div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="index.html">Home</a></li>
-                    <li><a href="search.html">Book a Flight</a></li>
                     <li><a href="#">About</a></li>
                     <li><a href="#">Contact</a></li>
                 </ul>
@@ -30,10 +28,10 @@
     <nav class="breadcrumb">
         <div class="container">
             <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
-                <li><a href="search.html"><i class="fas fa-search"></i> Booking Details</a></li>
-                <li><a href="flights.html"><i class="fas fa-plane"></i> Flights</a></li>
-                <li><a href="passengers.html"><i class="fas fa-users"></i> Passengers</a></li>
+                <li><a href="#" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" class="active"><i class="fas fa-search"></i> Booking Details</a></li>
+                <li><a href="#" class="active"><i class="fas fa-plane"></i> Flights</a></li>
+                <li><a href="#" class="active"><i class="fas fa-users"></i> Passengers</a></li>
                 <li><a href="#" class="active"><i class="fas fa-clipboard-list"></i> Summary</a></li>
             </ul>
         </div>
@@ -50,22 +48,13 @@
 
             <div class="summary-card">
                 <!-- Flight Details Section -->
-                <section class="summary-section" id="flightDetails">
-                    <h3 class="section-title"><i class="fas fa-plane-departure"></i> Flight Details</h3>
-                    <!-- Filled by JS -->
-                </section>
+                <section class="summary-section" id="flightDetails"></section>
 
                 <!-- Passenger Details Section -->
-                <section class="summary-section mt-4" id="passengerDetails">
-                    <h3 class="section-title"><i class="fas fa-users"></i> Passenger Details</h3>
-                    <!-- Filled by JS -->
-                </section>
+                <section class="summary-section mt-4" id="passengerDetails"></section>
 
                 <!-- Price Breakdown -->
-                <section class="summary-section mt-4" id="priceDetails">
-                    <h3 class="section-title"><i class="fas fa-dollar-sign"></i> Price Breakdown</h3>
-                    <!-- Filled by JS -->
-                </section>
+                <section class="summary-section mt-4" id="priceDetails"></section>
             </div>
 
             <!-- Buttons -->
@@ -80,90 +69,7 @@
         </div>
     </main>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    // --- Get booking details from sessionStorage ---
-    const rawBooking = sessionStorage.getItem("bookingDetails");
-    if (!rawBooking) {
-        alert("⚠️ Missing booking details. Please go back and complete your booking.");
-        window.location.href = "search.html";
-        return;
-    }
-
-    const bookingDetails = JSON.parse(rawBooking);
-
-    // --- Extract flights and passengers ---
-    const departureFlight = bookingDetails.selectedDeparture || {};
-    const returnFlight = bookingDetails.selectedReturn || {};
-    const passengers = bookingDetails.passengersInfo || [];
-
-    // --- Calculate total cost ---
-    const departurePrice = departureFlight.price || 0;
-    const returnPrice = returnFlight.price || 0;
-    const totalCost = (departurePrice + returnPrice) * passengers.length;
-
-    // --- Populate Flight Details ---
-    const flightSection = document.getElementById("flightDetails");
-    let flightHTML = `
-        <div class="detail-group">
-            <h4 class="detail-subtitle">Departure Flight</h4>
-            <div class="detail-item"><span>Flight No:</span><span>${departureFlight.flightNumber || "N/A"}</span></div>
-            <div class="detail-item"><span>From:</span><span>${departureFlight.from || "N/A"}</span></div>
-            <div class="detail-item"><span>To:</span><span>${departureFlight.to || "N/A"}</span></div>
-            <div class="detail-item"><span>Date:</span><span>${departureFlight.date || "N/A"}</span></div>
-            <div class="detail-item"><span>Departure:</span><span>${departureFlight.departureTime || "N/A"}</span></div>
-            <div class="detail-item"><span>Arrival:</span><span>${departureFlight.arrivalTime || "N/A"}</span></div>
-        </div>
-    `;
-
-    if (returnFlight.flightNumber) {
-        flightHTML += `
-        <div class="detail-group mt-3">
-            <h4 class="detail-subtitle">Return Flight</h4>
-            <div class="detail-item"><span>Flight No:</span><span>${returnFlight.flightNumber}</span></div>
-            <div class="detail-item"><span>From:</span><span>${returnFlight.from}</span></div>
-            <div class="detail-item"><span>To:</span><span>${returnFlight.to}</span></div>
-            <div class="detail-item"><span>Date:</span><span>${returnFlight.date}</span></div>
-            <div class="detail-item"><span>Departure:</span><span>${returnFlight.departureTime}</span></div>
-            <div class="detail-item"><span>Arrival:</span><span>${returnFlight.arrivalTime}</span></div>
-        </div>
-        `;
-    }
-
-    flightSection.innerHTML = flightHTML;
-
-    // --- Populate Passenger Details ---
-    const passengerSection = document.getElementById("passengerDetails");
-    if (passengers.length === 0) {
-        passengerSection.innerHTML = "<p>No passenger information available.</p>";
-    } else {
-        passengerSection.innerHTML = passengers.map((p, i) => `
-            <div class="detail-group ${i > 0 ? 'mt-3' : ''}">
-                <h4 class="detail-subtitle">Passenger ${i + 1}</h4>
-                <div class="detail-item"><span>Name:</span><span>${p.name}</span></div>
-                <div class="detail-item"><span>Age:</span><span>${p.age}</span></div>
-                <div class="detail-item"><span>Contact:</span><span>${p.contact}</span></div>
-                <div class="detail-item"><span>Email:</span><span>${p.email}</span></div>
-            </div>
-        `).join("");
-    }
-
-    // --- Populate Price Details ---
-    const priceSection = document.getElementById("priceDetails");
-    priceSection.innerHTML = `
-        <div class="detail-item"><span>Number of Passengers:</span><span>${passengers.length}</span></div>
-        <div class="detail-item"><span>Total Amount:</span><span>₱${totalCost.toLocaleString()}</span></div>
-    `;
-
-    // --- Book Now Button ---
-    document.getElementById('bookNowBtn').addEventListener('click', () => {
-        alert('✅ Booking confirmed! Thank you for flying with SkyWings Airlines.');
-        sessionStorage.clear();
-        window.location.href = "index.html";
-    });
-});
-</script>
-
-
+    <!-- External JS -->
+    <script src="js/summary.js"></script>
 </body>
 </html>
